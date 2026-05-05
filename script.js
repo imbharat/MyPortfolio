@@ -827,7 +827,7 @@ function buildCharts(rows) {
         scales: {
           x: {
             grid: { color: "rgba(0,0,0,.05)" },
-            ticks: { callback: (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%" },
+            ticks: { callback: (v) => (v >= 0 ? "+" : "\u2212") + Math.abs(v).toLocaleString(lang === "pl" ? "pl-PL" : "en-US", {minimumFractionDigits:1,maximumFractionDigits:1}) + "%" },
           },
           y: { grid: { display: false }, ticks: { font: { size: 11 }, autoSkip: false } },
         },
@@ -1026,7 +1026,7 @@ function buildCharts(rows) {
         scales: {
           x: {
             grid: { color: "rgba(0,0,0,.05)" },
-            ticks: { callback: (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%" },
+            ticks: { callback: (v) => (v >= 0 ? "+" : "\u2212") + Math.abs(v).toLocaleString(lang === "pl" ? "pl-PL" : "en-US", {minimumFractionDigits:1,maximumFractionDigits:1}) + "%" },
           },
           y: { grid: { display: false }, ticks: { font: { size: 11 }, autoSkip: false } },
         },
@@ -1137,12 +1137,12 @@ function buildCharts(rows) {
           x: {
             title: { display: true, text: t("chBubbleX"), font: { size: 11 } },
             grid: { color: "rgba(0,0,0,.05)" },
-            ticks: { callback: (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%" },
+            ticks: { callback: (v) => (v >= 0 ? "+" : "\u2212") + Math.abs(v).toLocaleString(lang === "pl" ? "pl-PL" : "en-US", {minimumFractionDigits:1,maximumFractionDigits:1}) + "%" },
           },
           y: {
             title: { display: true, text: t("chBubbleY"), font: { size: 11 } },
             grid: { color: "rgba(0,0,0,.05)" },
-            ticks: { callback: (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%" },
+            ticks: { callback: (v) => (v >= 0 ? "+" : "\u2212") + Math.abs(v).toLocaleString(lang === "pl" ? "pl-PL" : "en-US", {minimumFractionDigits:1,maximumFractionDigits:1}) + "%" },
           },
         },
       },
@@ -1348,17 +1348,21 @@ function parseNum(value) {
 
 function fmtCcy(v) {
   if (v == null || isNaN(v)) return "—";
-  return v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const locale = lang === "pl" ? "pl-PL" : "en-US";
+  return v.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function fmtPct(v) {
   if (v == null || isNaN(v)) return "—";
-  return (v >= 0 ? "+" : "") + v.toFixed(2) + "%";
+  const locale = lang === "pl" ? "pl-PL" : "en-US";
+  const abs = Math.abs(v).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (v >= 0 ? "+" : "−") + abs + "%";
 }
 
 function fmtNum(v, dp = 2) {
   if (v == null || isNaN(v)) return "—";
-  return v.toFixed(dp);
+  const locale = lang === "pl" ? "pl-PL" : "en-US";
+  return v.toLocaleString(locale, { minimumFractionDigits: dp, maximumFractionDigits: dp });
 }
 
 function esc(s) {
