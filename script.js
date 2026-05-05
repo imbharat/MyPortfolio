@@ -451,7 +451,7 @@ async function fetchAllLivePrices() {
       stocks[ticker].flows.push({ date: today, amount: valuePLN }); // terminal flow for XIRR
 
       const label = ccy === "GBp" ? "p" : ccy;
-      log.push(`${stocks[ticker].name}: ${priceNative.toFixed(2)} ${label}`);
+      log.push(`${stocks[ticker].name}: ${pricePLN.toFixed(2)} PLN`);
     } else {
       log.push(`${stocks[ticker].name}: no price`);
     }
@@ -1216,8 +1216,8 @@ function buildCards(rows) {
     const avgPrice = r.isOpen && r.openUnits > 0.00001
       ? `${fmtNum(r.unrInvested / r.openUnits, 2)} PLN`
       : "—";
-    const curPrice = r.currentPrice != null
-      ? `${fmtNum(r.currentPrice, 2)} ${r.currentPriceCcy === "GBp" ? "p" : (r.currentPriceCcy || "")}`
+    const curPrice = r.currVal > 0 && r.openUnits > 0.00001
+      ? `${fmtNum(r.currVal / r.openUnits, 2)} PLN`
       : (r.isOpen ? `<span class="err">${t("noPrice")}</span>` : "—");
     return `<div class="stock-card">
       <div class="card-left">
@@ -1270,8 +1270,8 @@ function buildTable(rows) {
     const xc = isNaN(r.xirrVal) ? "" : r.xirrVal >= 0 ? "pos" : "neg";
     const uc = isNaN(r.unrPnl) ? "" : r.unrPnl >= 0 ? "pos" : "neg";
     const lc = r.rlzPnl >= 0 ? "pos" : "neg";
-    const priceCell = r.currentPrice != null
-      ? `${fmtNum(r.currentPrice, 2)} <small class="ccy">${r.currentPriceCcy || ""}</small>`
+    const priceCell = r.currVal > 0 && r.openUnits > 0.00001
+      ? `${fmtNum(r.currVal / r.openUnits, 2)} <small class="ccy">PLN</small>`
       : (r.openUnits > 0.00001 ? `<span class="err">${t("noPrice")}</span>` : "—");
     return `<tr>
       <td><code>${esc(r.ticker)}</code></td>
