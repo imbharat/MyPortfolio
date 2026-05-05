@@ -55,6 +55,7 @@ const LANG = {
     groupClosed:       "Zamknięte pozycje",
     noData:            "Brak danych o akcjach.",
     noPrice:           "brak kursu",
+    cardAvg:           "Śr. cena",
     // Charts
     chAllocTitle:      "Alokacja portfela (wartość bieżąca)",
     chRetTitle:        "Otwarte pozycje — Zwrot %",
@@ -129,7 +130,8 @@ const LANG = {
     groupOpen:         "Open Positions",
     groupClosed:       "Closed Positions",
     noData:            "No stock data found.",
-    noPrice:           "no price",
+    noPrice:           "no price",
+    cardAvg:           "Avg",
     // Charts
     chAllocTitle:      "Portfolio Allocation (current value)",
     chRetTitle:        "Open Positions — Return %",
@@ -451,7 +453,7 @@ async function fetchAllLivePrices() {
       stocks[ticker].flows.push({ date: today, amount: valuePLN }); // terminal flow for XIRR
 
       const label = ccy === "GBp" ? "p" : ccy;
-      log.push(`${stocks[ticker].name}: ${pricePLN.toFixed(2)} PLN`);
+      log.push(`${stocks[ticker].name}: ${pricePLN.toFixed(2)} zł`);
     } else {
       log.push(`${stocks[ticker].name}: no price`);
     }
@@ -1214,20 +1216,20 @@ function buildCards(rows) {
     const rc  = r.netPnl >= 0 ? "pos" : "neg";
     const xc  = isNaN(r.xirrVal) ? "" : r.xirrVal >= 0 ? "pos" : "neg";
     const avgPrice = r.isOpen && r.openUnits > 0.00001
-      ? `${fmtNum(r.unrInvested / r.openUnits, 2)} PLN`
-      : "—";
+      ? `${fmtNum(r.unrInvested / r.openUnits, 2)} zł`
+      : null;
     const curPrice = r.currVal > 0 && r.openUnits > 0.00001
-      ? `${fmtNum(r.currVal / r.openUnits, 2)} PLN`
-      : (r.isOpen ? `<span class="err">${t("noPrice")}</span>` : "—");
+      ? `${fmtNum(r.currVal / r.openUnits, 2)} zł`
+      : (r.isOpen ? `<span class="err">${t("noPrice")}</span>` : "");
     return `<div class="stock-card">
       <div class="card-left">
         <span class="card-name">${esc(r.name)}</span>
-        <span class="card-avg">Avg: ${avgPrice}</span>
+        ${avgPrice ? `<span class="card-avg">${t("cardAvg")}: ${avgPrice}</span>` : ""}
       </div>
       <div class="card-right">
         <span class="card-return ${rc}">${fmtPct(r.returnPct)}</span>
         <span class="card-xirr ${xc}">XIRR: ${fmtPct(r.xirrVal)}</span>
-        <span class="card-price">${curPrice}</span>
+        ${curPrice ? `<span class="card-price">${curPrice}</span>` : ""}
       </div>
     </div>`;
   };
@@ -1271,7 +1273,7 @@ function buildTable(rows) {
     const uc = isNaN(r.unrPnl) ? "" : r.unrPnl >= 0 ? "pos" : "neg";
     const lc = r.rlzPnl >= 0 ? "pos" : "neg";
     const priceCell = r.currVal > 0 && r.openUnits > 0.00001
-      ? `${fmtNum(r.currVal / r.openUnits, 2)} <small class="ccy">PLN</small>`
+      ? `${fmtNum(r.currVal / r.openUnits, 2)} <small class="ccy">zł</small>`
       : (r.openUnits > 0.00001 ? `<span class="err">${t("noPrice")}</span>` : "—");
     return `<tr>
       <td><code>${esc(r.ticker)}</code></td>
