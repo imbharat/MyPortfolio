@@ -477,7 +477,6 @@ function buildPricePills() {
     <div class="price-pills">${pills}</div>
   </details>`;
 }
-}
 
 /** Map eToro ticker suffix → Yahoo Finance symbol */
 function toYahooTicker(ticker) {
