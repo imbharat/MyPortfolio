@@ -232,6 +232,33 @@ async function fetchLivePrices() {
 }
 
 async function fetchTickerPrice(ticker) {
+  const baseTicker = ticker.split('.')[0];
+  const exchange = ticker.split('.')[1] || '';
+  const candidates = [
+    ticker,
+    `${baseTicker}.US`,
+    `${baseTicker}.DE`,
+    `${baseTicker}.UK`,
+    `${baseTicker}.WA`, // Warsaw
+    `${baseTicker}.PL`,
+    `${baseTicker}.L`,  // London
+  ].filter((t, i, arr) => arr.indexOf(t) === i); // unique
+
+  for (const candidate of candidates) {
+    try {
+      const price = await fetchTickerPriceDirect(candidate);
+      if (price != null) {
+        return price;
+      }
+    } catch (error) {
+      // continue to next candidate
+    }
+  }
+
+  throw new Error(`no price found for ${ticker}`);
+}
+
+async function fetchTickerPriceDirect(ticker) {
   const url = `https://stooq.com/q/l/?s=${encodeURIComponent(ticker)}&f=sd2t2ohlcv&h&e=csv`;
   const proxies = [
     "https://api.allorigins.win/raw?url=",
