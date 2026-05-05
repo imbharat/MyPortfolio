@@ -180,6 +180,7 @@ function applyLang() {
   if (lastRows) {
     summaryEl.innerHTML = buildSummary(lastRows.__summary);
     tableEl.innerHTML   = buildTable(lastRows);
+    cardListEl.innerHTML = buildCards(lastRows);
     if (chartsReady) { chartsReady = false; buildCharts(lastRows); chartsReady = true; }
   }
 }
@@ -202,6 +203,7 @@ const uploadSection = document.getElementById("upload-section");
 const summaryEl     = document.getElementById("summary");
 const detailsEl     = document.getElementById("details");
 const tableEl       = document.getElementById("table");
+const cardListEl    = document.getElementById("card-list");
 const chartsEl      = document.getElementById("charts");
 const loaderEl      = document.getElementById("loader");
 const loaderMsgEl   = document.getElementById("loader-msg");
@@ -635,6 +637,7 @@ function renderResults() {
   });
   const summaryData = { totInvested, totReceived, totCurrVal, totNetPnl, totReturn, pfXirr, rlzInvested, rlzReceived, rlzPnl, rlzReturn, unrInvested, unrCurrVal, unrPnl, unrReturn };
   tableEl.innerHTML = buildTable(rows);
+  cardListEl.innerHTML = buildCards(rows);
   lastRows           = rows;
   lastRows.__summary = summaryData;
   chartsReady = false;
@@ -1191,6 +1194,54 @@ function buildCharts(rows) {
     document.getElementById("ch-div-box").innerHTML =
       `<p class="chart-empty">${t("noDividend")}</p>`;
   }
+}
+
+function buildCards(rows) {
+  if (!rows.length) return `<p class="card-empty">${t("noData")}</p>`;
+
+  const sortGroup = (arr) => arr.slice().sort((a, b) => {
+    if (!isNaN(b.returnPct) && !isNaN(a.returnPct)) return b.returnPct - a.returnPct;
+    return isNaN(a.returnPct) ? 1 : -1;
+  });
+
+  const openRows   = sortGroup(rows.filter(r => r.isOpen));
+  const closedRows = sortGroup(rows.filter(r => !r.isOpen));
+
+  const groupHdr = (label, cls, count) =>
+    `<div class="card-group-hdr ${cls}">${label} <small>(${count})</small></div>`;
+
+  const makeCard = (r) => {
+    const rc  = r.netPnl >= 0 ? "pos" : "neg";
+    const xc  = isNaN(r.xirrVal) ? "" : r.xirrVal >= 0 ? "pos" : "neg";
+    const avgPrice = r.isOpen && r.openUnits > 0.00001
+      ? `${fmtNum(r.unrInvested / r.openUnits, 2)} PLN`
+      : "—";
+    const curPrice = r.currentPrice != null
+      ? `${fmtNum(r.currentPrice, 2)} ${r.currentPriceCcy === "GBp" ? "p" : (r.currentPriceCcy || "")}`
+      : (r.isOpen ? `<span class="err">${t("noPrice")}</span>` : "—");
+    return `<div class="stock-card">
+      <div class="card-left">
+        <span class="card-name">${esc(r.name)}</span>
+        <span class="card-avg">Avg: ${avgPrice}</span>
+      </div>
+      <div class="card-right">
+        <span class="card-return ${rc}">${fmtPct(r.returnPct)}</span>
+        <span class="card-xirr ${xc}">XIRR: ${fmtPct(r.xirrVal)}</span>
+        <span class="card-price">${curPrice}</span>
+      </div>
+    </div>`;
+  };
+
+  let html = "";
+  if (openRows.length) {
+    html += groupHdr(t("groupOpen"), "card-ghdr-open", openRows.length);
+    html += openRows.map(makeCard).join("");
+  }
+  if (closedRows.length) {
+    html += groupHdr(t("groupClosed"), "card-ghdr-closed", closedRows.length);
+    html += closedRows.map(makeCard).join("");
+  }
+  return html;
 }
 
 function buildTable(rows) {

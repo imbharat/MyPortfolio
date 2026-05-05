@@ -348,6 +348,42 @@ td.empty { text-align: center; padding: 20px; color: #888; }
 /* ── Error ─────────────────────────────────────────────────────────────── */
 .err { color: #b02030; font-style: italic; font-size: 0.85em; }
 
+/* ── Stock cards (mobile only) ───────────────────────────────────────────── */
+.card-list { display: none; }
+
+.card-group-hdr {
+  padding: 7px 12px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 700;
+  margin: 10px 0 4px;
+  border-radius: 6px;
+}
+.card-ghdr-open   { background: #e6f4ea; color: #1d7a33; }
+.card-ghdr-closed { background: #f0f2f5; color: #555; }
+
+.stock-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #dde3ec;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+.card-left  { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; margin-left: 12px; }
+
+.card-name  { font-weight: 700; font-size: 0.92rem; color: #0f3460; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-avg   { font-size: 0.78rem; color: #666; }
+.card-return { font-size: 1.05rem; font-weight: 700; }
+.card-xirr  { font-size: 0.78rem; color: #555; }
+.card-price { font-size: 0.8rem; color: #888; margin-top: 2px; }
+.card-empty { color: #aaa; font-size: 0.85rem; text-align: center; padding: 16px 0; }
+
 /* ── Mobile ─────────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   body { margin: 12px auto; padding: 0 12px; overflow-x: hidden; }
@@ -364,22 +400,9 @@ td.empty { text-align: center; padding: 20px; color: #888; }
   .charts-grid { grid-template-columns: 1fr; }
   .chart-box-wide { grid-column: unset; }
 
-  /* Table: hide verbose columns, keep Name | Net P&L | Return % | XIRR % */
-  .table-scroll { overflow-x: hidden; }
-  table         { min-width: 0; font-size: 0.82rem; }
-
-  /* Hidden: Ticker(1) Units(3) LivePrice(4) Invested(5) Received(6) OpenValue(7) UnrlzdPL(8) RlzdPL(9) */
-  th:nth-child(1), td:nth-child(1),
-  th:nth-child(3), td:nth-child(3),
-  th:nth-child(4), td:nth-child(4),
-  th:nth-child(5), td:nth-child(5),
-  th:nth-child(6), td:nth-child(6),
-  th:nth-child(7), td:nth-child(7),
-  th:nth-child(8), td:nth-child(8),
-  th:nth-child(9), td:nth-child(9) { display: none; }
-
-  /* Group-header rows have a single colspan td — always show it */
-  .group-hdr td { display: table-cell !important; }
+  /* Swap table for cards on mobile */
+  .table-scroll { display: none; }
+  .card-list    { display: block; }
 
   th, td { padding: 8px 10px; }
 }
