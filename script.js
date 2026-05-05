@@ -88,8 +88,17 @@ function parseCashOperations(rows) {
     const symbol = findFirst(row, ["ticker", "symbol", "instrument", "isin"]);
     const amount = parseNumber(row["amount"]);
     const date = parseDate(findFirst(row, ["time", "date", "execution time", "position date"]));
-    const volume = parseNumber(findFirst(row, ["volume", "units", "quantity"]));
     const type = row["type"]?.toString().toLowerCase() || "";
+    
+    // Extract volume from comment if available (e.g., "OPEN BUY 0.0565 @ 388.08")
+    let volume = parseNumber(findFirst(row, ["volume", "units", "quantity"]));
+    if (!volume) {
+      const comment = row["comment"]?.toString() || "";
+      const match = comment.match(/(?:BUY|SELL)\s+([\d.]+)\s*@/i);
+      if (match) {
+        volume = parseNumber(match[1]);
+      }
+    }
 
     if (!symbol || amount == null || !date) return;
 
