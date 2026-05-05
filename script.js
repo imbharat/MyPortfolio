@@ -65,9 +65,9 @@ function parseWorkbook(wb) {
 }
 
 function parseCashOperations(rows) {
-  const stats = { totalRows: rows.length, matchedRows: 0 };
+  const stats = { totalRows: rows.length, matchedRows: 0, debug: [] };
 
-  rows.forEach((rawRow) => {
+  rows.forEach((rawRow, idx) => {
     const row = normalizeRow(rawRow);
     const symbol = findFirst(row, ["ticker", "symbol", "instrument", "isin"]);
     const amount = parseNumber(row["amount"]);
@@ -75,11 +75,24 @@ function parseCashOperations(rows) {
     const volume = parseNumber(findFirst(row, ["volume", "units", "quantity"]));
     const type = row["type"]?.toString().toLowerCase() || "";
 
+    if (idx < 3) {
+      stats.debug.push({
+        idx,
+        keys: Object.keys(row),
+        symbol,
+        amount,
+        volume,
+        type,
+      });
+    }
+
     if (!symbol || amount == null || !date) return;
 
     if (type.includes("stock") || type.includes("buy") || type.includes("sell") || type.includes("dividend") || type.includes("interest") || type.includes("deposit") || type.includes("withdrawal")) {
       addStockFlow(symbol, date, amount, "cash");
-      adjustOpenUnits(symbol, volume, type);
+      if (volume != null) {
+        adjustOpenUnits(symbol, volume, type);
+      }
       stats.matchedRows += 1;
     }
   });
@@ -470,7 +483,18 @@ function calculate() {
     `Portfolio XIRR: ${formatPercent(portfolioXirr)}`;
 
   const sheetDetails = Object.entries(parseStats.sheets)
-    .map(([sheet, stats]) => `${sheet}: ${stats.matchedRows}/${stats.totalRows} rows matched`)
+    .map(([sheet, stats]) => {
+      let detail = `${sheet}: ${stats.matchedRows}/${stats.totalRows} rows`;
+      if (stats.debug && stats.debug.length > 0) {
+        const debugStr = JSON.stringify(stats.debug[0])
+          .split('"')
+          .slice(0, 20)
+          .join("")
+          .substring(0, 80);
+        detail += ` [${debugStr}...]`;
+      }
+      return detail;
+    })
     .join(" | ");
 
   detailsEl.innerHTML = `Parsed rows: ${parseStats.totalRows}, matched stock rows: ${parseStats.matchedRows}. ` +
