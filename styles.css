@@ -118,17 +118,68 @@ body.has-results #upload-section { display: none; }
 .summary-card.pos .value { color: #1d7a33; }
 .summary-card.neg .value { color: #b02030; }
 
-/* ── Details line ──────────────────────────────────────────────────────── */
+/* ── Live prices collapsible ───────────────────────────────────────────── */
 #details {
-  font-size: 0.85rem;
-  color: #555;
-  line-height: 1.6;
-  background: #fff;
   border: 1px solid #dde3ec;
   border-radius: 8px;
-  padding: 10px 14px;
-  min-height: 36px;
+  background: #fff;
+  overflow: hidden;
 }
+
+.live-prices-details {
+  font-size: 0.85rem;
+}
+.live-prices-details summary {
+  padding: 9px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #0f3460;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+.live-prices-details summary::-webkit-details-marker { display: none; }
+.live-prices-details summary::before {
+  content: "▶";
+  font-size: 0.65rem;
+  transition: transform 0.2s;
+  color: #007acc;
+}
+.live-prices-details[open] summary::before { transform: rotate(90deg); }
+.live-prices-details summary:hover { background: #f5f8ff; }
+
+.price-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 14px 12px;
+  border-top: 1px solid #eef1f6;
+}
+.price-pill {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: #f0f5ff;
+  border: 1px solid #ccdcf8;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  color: #333;
+  white-space: nowrap;
+  min-width: 64px;
+  text-align: center;
+  gap: 1px;
+}
+.price-pill em {
+  font-style: normal;
+  font-weight: 700;
+  color: #0f3460;
+  font-size: 0.82rem;
+}
+.price-pill-err { background: #fff0f0; border-color: #f5c6c6; }
+.price-pill-err em { color: #b02030; }
 
 /* ── Table scroll wrapper ─────────────────────────────────────────────── */
 .table-scroll {

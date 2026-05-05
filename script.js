@@ -3,6 +3,7 @@ let stocks         = {};    // {ticker: StockData}
 let chartInstances = [];    // Chart.js instances — destroyed before each rebuild
 let divFlows       = [];    // {date, ticker, amount} — dividend payments only
 let lastRows       = null;  // cached for lazy chart build on tab switch
+let lastPriceLog   = [];    // [{name, pricePLN, ok}] — for re-render on lang switch
 let chartsReady    = false;
 let lang           = "pl";  // current language
 
@@ -17,7 +18,7 @@ const LANG = {
     readingFile:       "Wczytywanie pliku…",
     fetchingPrices:    (n) => `Pobieranie kursów dla ${n} spółek…`,
     noOpenPositions:   "Brak otwartych pozycji do wyceny.",
-    livePricesLabel:   "Kursy bieżące →",
+    livePricesLabel:   "Kursy bieżące",
     noFile:            "Najpierw wybierz plik Excel z portfelem.",
     errPrefix:         "Błąd: ",
     resetBtn:          "↵ Analizuj inny plik",
@@ -93,7 +94,7 @@ const LANG = {
     readingFile:       "Reading file…",
     fetchingPrices:    (n) => `Fetching live prices for ${n} stocks…`,
     noOpenPositions:   "No open positions to price.",
-    livePricesLabel:   "Live prices →",
+    livePricesLabel:   "Live prices",
     noFile:            "Please select a portfolio Excel file first.",
     errPrefix:         "Error: ",
     resetBtn:          "↵ Analyze another file",
@@ -183,6 +184,7 @@ function applyLang() {
     summaryEl.innerHTML = buildSummary(lastRows.__summary);
     tableEl.innerHTML   = buildTable(lastRows);
     cardListEl.innerHTML = buildCards(lastRows);
+    buildPricePills();
     if (chartsReady) { chartsReady = false; buildCharts(lastRows); chartsReady = true; }
   }
 }
@@ -258,8 +260,9 @@ async function run() {
 
 // ─── Parsing ──────────────────────────────────────────────────────────────────
 function parseWorkbook(wb) {
-  stocks   = {};
-  divFlows = [];
+  stocks       = {};
+  divFlows     = [];
+  lastPriceLog = [];
 
   wb.SheetNames.forEach((sheetName) => {
     const sheet = wb.Sheets[sheetName];
@@ -453,13 +456,27 @@ async function fetchAllLivePrices() {
       stocks[ticker].flows.push({ date: today, amount: valuePLN }); // terminal flow for XIRR
 
       const label = ccy === "GBp" ? "p" : ccy;
-      log.push(`${stocks[ticker].name}: ${pricePLN.toFixed(2)} zł`);
+      lastPriceLog.push({ name: stocks[ticker].name, pricePLN, ok: true });
     } else {
-      log.push(`${stocks[ticker].name}: no price`);
+      lastPriceLog.push({ name: stocks[ticker].name, pricePLN: null, ok: false });
     }
   });
 
-  detailsEl.innerHTML = `<strong>${t("livePricesLabel")}</strong> ${esc(log.join(" | "))}`;
+  buildPricePills();
+}
+
+function buildPricePills() {
+  if (!lastPriceLog.length) return;
+  const pills = lastPriceLog.map(({ name, pricePLN, ok }) =>
+    ok
+      ? `<span class="price-pill">${esc(name)}<em>${fmtNum(pricePLN, 2)} z&#322;</em></span>`
+      : `<span class="price-pill price-pill-err">${esc(name)}<em>${t("noPrice")}</em></span>`
+  ).join("");
+  detailsEl.innerHTML = `<details class="live-prices-details">
+    <summary data-i18n="livePricesLabel">${t("livePricesLabel")}</summary>
+    <div class="price-pills">${pills}</div>
+  </details>`;
+}
 }
 
 /** Map eToro ticker suffix → Yahoo Finance symbol */
