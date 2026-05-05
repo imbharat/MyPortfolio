@@ -43,48 +43,53 @@ function parseWorkbook(wb) {
     const sheet = wb.Sheets[name];
     if (!sheet) return;
 
-    const rows = XLSX.utils.sheet_to_json(sheet, { raw: false, defval: null, range: 4 });
-    let sheetStats = { totalRows: rows.length, matchedRows: 0 };
-
-    if (name.toLowerCase().includes("cash")) {
-      sheetStats = parseCashOperations(rows);
-    } else if (name.toLowerCase().includes("closed")) {
-      sheetStats = parseClosedPositions(rows);
-    } else {
-      rows.forEach((rawRow) => {
-        if (parseRow(rawRow)) {
-          sheetStats.matchedRows += 1;
-        }
+    // Get all rows as arrays first
+    const allRows = XLSX.utils.sheet_to_json(sheet, { raw: false, defval: null, header: 1 });
+    
+    // Extract headers from row 5 (index 4) and convert remaining rows to JSON
+    if (allRows.length > 4) {
+      const headers = allRows[4];
+      const dataRows = allRows.slice(5).map(rowArray => {
+        const obj = {};
+        headers.forEach((header, idx) => {
+          if (header !== undefined && header !== null) {
+            obj[header.toString().toLowerCase().trim()] = rowArray[idx];
+          }
+        });
+        return obj;
       });
-    }
+      
+      let sheetStats = { totalRows: dataRows.length, matchedRows: 0 };
 
-    parseStats.totalRows += sheetStats.totalRows;
-    parseStats.matchedRows += sheetStats.matchedRows;
-    parseStats.sheets[name] = sheetStats;
+      if (name.toLowerCase().includes("cash")) {
+        sheetStats = parseCashOperations(dataRows);
+      } else if (name.toLowerCase().includes("closed")) {
+        sheetStats = parseClosedPositions(dataRows);
+      } else {
+        dataRows.forEach((rawRow) => {
+          if (parseRow(rawRow)) {
+            sheetStats.matchedRows += 1;
+          }
+        });
+      }
+
+      parseStats.totalRows += sheetStats.totalRows;
+      parseStats.matchedRows += sheetStats.matchedRows;
+      parseStats.sheets[name] = sheetStats;
+    }
   });
 }
 
 function parseCashOperations(rows) {
-  const stats = { totalRows: rows.length, matchedRows: 0, debug: [] };
+  const stats = { totalRows: rows.length, matchedRows: 0 };
 
-  rows.forEach((rawRow, idx) => {
+  rows.forEach((rawRow) => {
     const row = normalizeRow(rawRow);
     const symbol = findFirst(row, ["ticker", "symbol", "instrument", "isin"]);
     const amount = parseNumber(row["amount"]);
     const date = parseDate(findFirst(row, ["time", "date", "execution time", "position date"]));
     const volume = parseNumber(findFirst(row, ["volume", "units", "quantity"]));
     const type = row["type"]?.toString().toLowerCase() || "";
-
-    if (idx < 3) {
-      stats.debug.push({
-        idx,
-        keys: Object.keys(row),
-        symbol,
-        amount,
-        volume,
-        type,
-      });
-    }
 
     if (!symbol || amount == null || !date) return;
 
@@ -483,18 +488,7 @@ function calculate() {
     `Portfolio XIRR: ${formatPercent(portfolioXirr)}`;
 
   const sheetDetails = Object.entries(parseStats.sheets)
-    .map(([sheet, stats]) => {
-      let detail = `${sheet}: ${stats.matchedRows}/${stats.totalRows} rows`;
-      if (stats.debug && stats.debug.length > 0) {
-        const debugStr = JSON.stringify(stats.debug[0])
-          .split('"')
-          .slice(0, 20)
-          .join("")
-          .substring(0, 80);
-        detail += ` [${debugStr}...]`;
-      }
-      return detail;
-    })
+    .map(([sheet, stats]) => `${sheet}: ${stats.matchedRows}/${stats.totalRows} rows matched`)
     .join(" | ");
 
   detailsEl.innerHTML = `Parsed rows: ${parseStats.totalRows}, matched stock rows: ${parseStats.matchedRows}. ` +
