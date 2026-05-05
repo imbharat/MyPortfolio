@@ -40,7 +40,7 @@ function parseWorkbook(wb) {
     const sheet = wb.Sheets[name];
     if (!sheet) return;
 
-    const rows = XLSX.utils.sheet_to_json(sheet, { raw: false, defval: null });
+    const rows = XLSX.utils.sheet_to_json(sheet, { raw: false, defval: null, range: 4 });
     rows.forEach((rawRow) => {
       parseRow(rawRow);
     });
@@ -52,14 +52,14 @@ function parseRow(rawRow) {
   const symbol = findFirst(row, ["ticker", "symbol", "instrument", "isin"]);
   if (!symbol) return;
 
-  const isFlowRow = hasAnyKey(row, ["amount", "profit", "cash flow", "net amount", "total amount", "pl", "p/l"]);
+  const isFlowRow = hasAnyKey(row, ["amount", "profit", "profit/loss", "cash flow", "net amount", "total amount", "pl", "p/l"]);
   const isValueRow = hasAnyKey(row, ["market value", "current value", "position value", "real value", "value"]);
 
-  const date = parseDate(findFirst(row, ["time", "date", "close time", "open time", "execution time", "trade date", "position date"]));
-  const flowAmount = parseNumber(findFirst(row, ["amount", "profit", "cash flow", "net amount", "total amount", "pl", "p/l"]));
+  const date = parseDate(findFirst(row, ["time", "date", "close time", "open time", "execution time", "trade date", "position date", "close time (utc)", "open time (utc)", "time (utc)"]));
+  const flowAmount = parseNumber(findFirst(row, ["amount", "profit", "profit/loss", "cash flow", "net amount", "total amount", "pl", "p/l"]));
 
   if (isFlowRow && flowAmount != null && date) {
-    const flowType = hasAnyKey(row, ["profit", "pl", "p/l"]) ? "profit" : "cash";
+    const flowType = hasAnyKey(row, ["profit", "profit/loss", "pl", "p/l"]) ? "profit" : "cash";
     addStockFlow(symbol, date, flowAmount, flowType);
     return;
   }
