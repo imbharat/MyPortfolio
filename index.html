@@ -4,29 +4,53 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Portfolio Analyzer</title>
-  <link rel="stylesheet" href="styles.css?v=1.1" />
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="styles.css?v=2.8" />
 </head>
 <body>
   <main>
-    <h2>Portfolio Analyzer</h2>
-    <p class="version-note">Updated version — reload the page if you still see the old layout.</p>
+    <div class="lang-bar">
+      <select id="lang-select">
+        <option value="pl" selected>🇵🇱 Polski</option>
+        <option value="en">🇬🇧 English</option>
+      </select>
+    </div>
+    <h2 data-i18n="appTitle">Analizator Portfela</h2>
 
-    <label class="file-label" for="file">
-      Select Excel portfolio file
-      <input type="file" id="file" accept=".xlsx, .xls" />
-    </label>
 
-    <button id="process">Analyze</button>
+    <div id="upload-section">
+      <label class="file-label" for="file">
+        <span data-i18n="selectFile">Wybierz plik Excel z portfelem</span>
+        <input type="file" id="file" accept=".xlsx, .xls" />
+      </label>
+      <button id="process" data-i18n="analyze">Analizuj</button>
+    </div>
 
-    <section>
-      <h3>Summary</h3>
+    <div id="loader" hidden>
+      <span class="spinner"></span>
+      <span id="loader-msg">Working…</span>
+    </div>
+
+    <nav id="tabs" class="tabs" hidden>
+      <button class="tab-btn active" data-tab="data" data-i18n="tabData">Podsumowanie i Tabela</button>
+      <button class="tab-btn" data-tab="charts" data-i18n="tabCharts">Wykresy</button>
+    </nav>
+
+    <div id="tab-data" class="tab-panel" hidden>
       <div id="summary"></div>
       <div id="details"></div>
-      <table id="table"></table>
-    </section>
+      <div class="table-scroll">
+        <table id="table"></table>
+      </div>
+    </div>
+
+    <div id="tab-charts" class="tab-panel" hidden>
+      <div id="charts" class="charts-grid"></div>
+    </div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-  <script src="script.js?v=1.6"></script>
+  <script src="script.js?v=2.8"></script>
 </body>
 </html>
