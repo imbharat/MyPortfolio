@@ -1,5 +1,6 @@
 let flows = [];
 let stockStats = {};
+let parseStats = { totalRows: 0, matchedRows: 0, sheets: {} };
 
 const processButton = document.getElementById("process");
 const fileInput = document.getElementById("file");
@@ -35,22 +36,31 @@ function run() {
 function parseWorkbook(wb) {
   flows = [];
   stockStats = {};
+  parseStats = { totalRows: 0, matchedRows: 0, sheets: {} };
 
   wb.SheetNames.forEach((name) => {
     const sheet = wb.Sheets[name];
     if (!sheet) return;
 
     const rows = XLSX.utils.sheet_to_json(sheet, { raw: false, defval: null, range: 4 });
+    const sheetStats = { totalRows: rows.length, matchedRows: 0 };
+
     rows.forEach((rawRow) => {
-      parseRow(rawRow);
+      if (parseRow(rawRow)) {
+        sheetStats.matchedRows += 1;
+      }
     });
+
+    parseStats.totalRows += sheetStats.totalRows;
+    parseStats.matchedRows += sheetStats.matchedRows;
+    parseStats.sheets[name] = sheetStats;
   });
 }
 
 function parseRow(rawRow) {
   const row = normalizeRow(rawRow);
   const symbol = findFirst(row, ["ticker", "symbol", "instrument", "isin"]);
-  if (!symbol) return;
+  if (!symbol) return false;
 
   const isFlowRow = hasAnyKey(row, ["amount", "profit", "profit/loss", "cash flow", "net amount", "total amount", "pl", "p/l"]);
   const isValueRow = hasAnyKey(row, ["market value", "current value", "position value", "real value", "value"]);
@@ -61,7 +71,7 @@ function parseRow(rawRow) {
   if (isFlowRow && flowAmount != null && date) {
     const flowType = hasAnyKey(row, ["profit", "profit/loss", "pl", "p/l"]) ? "profit" : "cash";
     addStockFlow(symbol, date, flowAmount, flowType);
-    return;
+    return true;
   }
 
   const currentValue = parseNumber(findFirst(row, ["market value", "current value", "position value", "real value", "value"]));
@@ -70,12 +80,15 @@ function parseRow(rawRow) {
 
   if (currentValue != null) {
     addCurrentValue(symbol, currentValue, date || new Date());
-    return;
+    return true;
   }
 
   if (units != null && price != null) {
     addCurrentValue(symbol, units * price, date || new Date());
+    return true;
   }
+
+  return false;
 }
 
 function normalizeRow(row) {
@@ -251,7 +264,13 @@ function calculate() {
     `Total return: ${formatPercent(totalReturnPct)}<br>` +
     `Portfolio XIRR: ${formatPercent(portfolioXirr)}`;
 
-  detailsEl.innerHTML = `Stocks found: ${rows.length}. ` +
+  const sheetDetails = Object.entries(parseStats.sheets)
+    .map(([sheet, stats]) => `${sheet}: ${stats.matchedRows}/${stats.totalRows} rows matched`)
+    .join(" | ");
+
+  detailsEl.innerHTML = `Parsed rows: ${parseStats.totalRows}, matched stock rows: ${parseStats.matchedRows}. ` +
+    `Sheets: ${sheetDetails}. ` +
+    `Stocks found: ${rows.length}. ` +
     `Best stock XIRR: ${bestXirr.stock ? `${bestXirr.stock} (${formatPercent(bestXirr.value)})` : "N/A"}. ` +
     `Worst stock XIRR: ${worstXirr.stock ? `${worstXirr.stock} (${formatPercent(worstXirr.value)})` : "N/A"}.`;
 
