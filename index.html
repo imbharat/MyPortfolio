@@ -1,29 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XTB XIRR Calculator (Auto)</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio Analyzer</title>
+  <link rel="stylesheet" href="styles.css?v=1.1" />
 </head>
 <body>
   <main>
-    <h2>XTB XIRR Calculator (Auto)</h2>
+    <h2>Portfolio Analyzer</h2>
+    <p class="version-note">Updated version — reload the page if you still see the old layout.</p>
 
     <label class="file-label" for="file">
-      Select XTB export file
-      <input type="file" id="file" accept=".xlsx, .xls">
+      Select Excel portfolio file
+      <input type="file" id="file" accept=".xlsx, .xls" />
     </label>
 
-    <button id="process">Process</button>
+    <button id="process">Analyze</button>
 
     <section>
-      <h3 id="summary"></h3>
+      <h3>Summary</h3>
+      <div id="summary"></div>
+      <div id="details"></div>
       <table id="table"></table>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-  <script src="script.js"></script>
+  <script src="script.js?v=1.1"></script>
 </body>
 </html>
