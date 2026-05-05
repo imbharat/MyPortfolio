@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XTB XIRR Calculator (Auto)</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <h2>XTB XIRR Calculator (Auto)</h2>
+
+    <label class="file-label" for="file">
+      Select XTB export file
+      <input type="file" id="file" accept=".xlsx, .xls">
+    </label>
+
+    <button id="process">Process</button>
+
+    <section>
+      <h3 id="summary"></h3>
+      <table id="table"></table>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
