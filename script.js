@@ -43,7 +43,7 @@ function parseWorkbook(wb) {
     const sheet = wb.Sheets[name];
     if (!sheet) return;
 
-    const rows = XLSX.utils.sheet_to_json(sheet, { raw: false, defval: null, range: 5 });
+    const rows = XLSX.utils.sheet_to_json(sheet, { raw: false, defval: null, range: 4 });
     let sheetStats = { totalRows: rows.length, matchedRows: 0 };
 
     if (name.toLowerCase().includes("cash")) {
